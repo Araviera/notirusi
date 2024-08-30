@@ -1,6 +1,7 @@
 import os
 import random
 import time
+import pygame
 
 def notify(title, message):
     os.system(f'''
@@ -226,8 +227,53 @@ def main():
         ("ю", "yu"),
         ("я", "ya")
     ]
-    how_long = input("reminder every ... seconds? ")
-    how_long = int(how_long)
+    pygame.init()
+    screen = pygame.display.set_mode((400, 300))
+    pygame.display.set_caption("Notification Interval")
+    font = pygame.font.Font(None, 32)
+    text = font.render("""remind in every..? (in seconds):""", True, (255, 255, 255))
+    text_rect = text.get_rect(center=(200, 150))
+
+    input_box = pygame.Rect(100, 200, 200, 32)
+    color_inactive = pygame.Color('lightskyblue3')
+    color_active = pygame.Color('dodgerblue2')
+    color = color_inactive
+    active = False
+    interval = ""
+
+    done = False
+    while not done:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                done = True
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if input_box.collidepoint(event.pos):
+                    active = not active
+                else:
+                    active = False
+                color = color_active if active else color_inactive
+            if event.type == pygame.KEYDOWN:
+                if active:
+                    if event.key == pygame.K_RETURN:
+                        try:
+                            how_long = int(interval)
+                            done = True
+                        except ValueError:
+                            interval = ""
+                    elif event.key == pygame.K_BACKSPACE:
+                        interval = interval[:-1]
+                    else:
+                        interval += event.unicode
+
+        screen.fill((30, 30, 30))
+        pygame.draw.rect(screen, color, input_box, 2)
+        pygame.draw.rect(screen, (255, 255, 255), input_box, 2)
+        txt_surface = font.render(interval, True, (255, 255, 255))
+        screen.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
+        screen.blit(text, text_rect)
+        pygame.display.flip()
+
+    pygame.quit()
 
     while True:
         random_word, meaning = random.choice(words)
